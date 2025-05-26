@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jnm.mallJnm.exception.ServerException;
 import com.jnm.mallJnm.model.ProductCategory;
-import com.jnm.mallJnm.mybatisplus.wrapper.JoinWrapper;
 import com.jnm.mallJnm.service.ProductCategoryService;
 import com.jnm.mallJnm.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +47,7 @@ public class ProductCategoryController {
      * 更新商品分类
      */
     @PutMapping("/{id}")
-    public void update(@PathVariable Integer id,
+    public void update(@PathVariable String id,
                        @Validated @RequestBody ProductCategory category) {
         category.setId(id);
         if (!categoryService.updateById(category)) {
@@ -60,7 +59,7 @@ public class ProductCategoryController {
      * 删除商品分类
      */
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Integer id) {
+    public void delete(@PathVariable String id) {
         if (!categoryService.removeById(id)) {
             throw new ServerException("删除分类失败");
         }
@@ -70,7 +69,7 @@ public class ProductCategoryController {
      * 调整分类排序
      */
     @PatchMapping("/{id}/sort")
-    public void updateSort(@PathVariable Integer id,
+    public void updateSort(@PathVariable String id,
                            @RequestParam Integer sortOrder) {
         ProductCategory category = new ProductCategory();
         category.setId(id);
@@ -84,7 +83,7 @@ public class ProductCategoryController {
      * 切换分类显示状态
      */
     @PatchMapping("/{id}/status")
-    public void toggleStatus(@PathVariable Integer id) {
+    public void toggleStatus(@PathVariable String id) {
         ProductCategory category = categoryService.getById(id);
         if (category == null) {
             throw new ServerException("分类不存在");

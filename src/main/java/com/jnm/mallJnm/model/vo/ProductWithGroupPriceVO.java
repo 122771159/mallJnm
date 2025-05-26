@@ -1,7 +1,7 @@
 package com.jnm.mallJnm.model.vo;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.jnm.mallJnm.model.CustomerProductPrice;
+import com.jnm.mallJnm.model.GroupProductPrice;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -9,10 +9,10 @@ import java.math.BigDecimal;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("jnm_customer_product_price")
-public class ProductWithCustomerPriceVO extends CustomerProductPrice {
+@TableName("jnm_group_product_price")
+public class ProductWithGroupPriceVO extends GroupProductPrice {
     // 商品基础信息
-    private Long id;
+    private String id;
     private String productName;
     private String productCode;
     private String description;

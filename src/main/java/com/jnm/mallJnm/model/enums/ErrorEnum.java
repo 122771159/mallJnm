@@ -12,6 +12,7 @@ public enum ErrorEnum {
     //105 微信openId登录校验错误
 
     //201 实体类参数校验错误
+    REPEAT(205, "数据重复"),
     PASSWORD_ERROR(202, "原密码错误"),
     EMPTY_ID_ERROR(203, "请传入对象的id"),
     USER_TYPE_ERROR(204, "用户类型不存在"),

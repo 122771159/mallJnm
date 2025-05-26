@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
 @Data
 public class CustomerGroup {
 
-    @TableId(type = IdType.AUTO) // 或者使用 ASSIGN_UUID 如果你需要业务ID
-    private Integer id; // 组ID (主键)
+    @TableId(type = IdType.ASSIGN_UUID)
+    private String id; // 组ID (主键)
 
     @NotBlank(message = "客户组名称不能为空")
     private String name; // 组名称

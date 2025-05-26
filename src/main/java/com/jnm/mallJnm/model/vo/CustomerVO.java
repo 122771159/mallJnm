@@ -1,32 +1,13 @@
-package com.jnm.mallJnm.model;
+package com.jnm.mallJnm.model.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import jakarta.validation.constraints.NotBlank;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.jnm.mallJnm.model.Customer;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import java.time.LocalDateTime;
-
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class Customer {
-    @TableId(type = IdType.ASSIGN_UUID)
-    private String id;  // 客户ID
-    
-    @NotBlank(message = "客户名称不能为空")
-    private String name;  // 客户名称
-    
-    @NotBlank(message = "登录账号不能为空")
-    private String account;  // 登录账号
-    
-    private String password;  // 登录密码
-    
-    private String openid;  // 微信openid（用于微信登录关联）
-    
-    private Integer status;  // 状态（0-禁用，1-启用）
-    @TableField("group_id") // 数据库中列名为 group_id
-    private Integer groupId; // 所属客户组ID (外键，关联 CustomerGroup 表的 id)
-    private LocalDateTime createTime;  // 创建时间
-    
-    private LocalDateTime updateTime;  // 更新时间
+@TableName("jnm_customer")
+public class CustomerVO extends Customer {
+    private String groupName;
 }

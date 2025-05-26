@@ -25,7 +25,7 @@ public class Customer {
     
     private Integer status;  // 状态（0-禁用，1-启用）
     @TableField("group_id") // 数据库中列名为 group_id
-    private Integer groupId; // 所属客户组ID (外键，关联 CustomerGroup 表的 id)
+    private String groupId; // 所属客户组ID (外键，关联 CustomerGroup 表的 id)
     private LocalDateTime createTime;  // 创建时间
     
     private LocalDateTime updateTime;  // 更新时间

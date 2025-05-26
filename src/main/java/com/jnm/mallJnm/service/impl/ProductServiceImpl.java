@@ -23,7 +23,7 @@ public class ProductServiceImpl
     }
 
     @Override
-    public boolean publishProduct(Long productId) {
+    public boolean publishProduct(String productId) {
         return lambdaUpdate()
                 .eq(Product::getId, productId)
                 .set(Product::getIsPublished, true)
@@ -32,7 +32,7 @@ public class ProductServiceImpl
     }
 
     @Override
-    public boolean unpublishProduct(Long productId) {
+    public boolean unpublishProduct(String productId) {
         return lambdaUpdate()
                 .eq(Product::getId, productId)
                 .set(Product::getIsPublished, false)

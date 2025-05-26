@@ -2,11 +2,12 @@ package com.jnm.mallJnm.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.jnm.mallJnm.model.Product;
+
 import java.util.List;
 
 public interface ProductService extends IService<Product> {
     // 自定义业务方法
     List<Product> getPublishedProducts(); // 示例：获取已上架商品
-    boolean publishProduct(Long productId); // 示例：商品上架
-    boolean unpublishProduct(Long productId); // 示例：商品下架
+    boolean publishProduct(String productId); // 示例：商品上架
+    boolean unpublishProduct(String productId); // 示例：商品下架
 }

@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 
 @Data
 public class ProductCategory {
-    @TableId(type = IdType.AUTO)
-    private Integer id;
+    @TableId(type = IdType.ASSIGN_UUID)
+    private String id;
     private String name;
     private Integer sortOrder;
     private String description;

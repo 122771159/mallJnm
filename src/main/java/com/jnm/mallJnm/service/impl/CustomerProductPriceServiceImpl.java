@@ -6,8 +6,6 @@ import com.jnm.mallJnm.model.CustomerProductPrice;
 import com.jnm.mallJnm.service.CustomerProductPriceService;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.util.List;
 
 @Service
 public class CustomerProductPriceServiceImpl 
@@ -15,26 +13,7 @@ public class CustomerProductPriceServiceImpl
     implements CustomerProductPriceService {
 
     @Override
-    public boolean setCustomerPrice(String customerId, Long productId, BigDecimal price) {
-        CustomerProductPrice entity = new CustomerProductPrice();
-        entity.setCustomerId(customerId);
-        entity.setProductId(productId);
-        entity.setCustomPrice(price);
-        return saveOrUpdate(entity);
-    }
-
-    @Override
-    public List<CustomerProductPrice> getCustomerPrices(String customerId, List<Long> productIds) {
-        return lambdaQuery()
-                .eq(CustomerProductPrice::getCustomerId, customerId)
-                .in(CustomerProductPrice::getProductId, productIds)
-                .list();
-    }
-
-    @Override
-    public List<CustomerProductPrice> getCustomerAllPrices(String customerId) {
-        return lambdaQuery()
-                .eq(CustomerProductPrice::getCustomerId, customerId)
-                .list();
+    public Boolean isCustomerProductPriceExisted(String customerId, String productId, String excludeId) {
+        return null;
     }
 }

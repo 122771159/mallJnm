@@ -62,7 +62,7 @@ public class ProductController {
     // 更新商品
     @PutMapping("/{id}")
     @Transactional(rollbackFor = Exception.class)
-    public void update(@PathVariable("id") Long id, @RequestBody ProductVO productVO) {
+    public void update(@PathVariable("id") String id, @RequestBody ProductVO productVO) {
         try {
             Product product = new Product();
             BeanUtils.copyProperties(productVO, product);
@@ -80,14 +80,14 @@ public class ProductController {
     // 删除商品
     @DeleteMapping("/{id}")
     @Transactional(rollbackFor = Exception.class)
-    public void delete(@PathVariable("id") Long id,@RequestBody ProductVO productVO) {
+    public void delete(@PathVariable("id") String id,@RequestBody ProductVO productVO) {
         uploadFileService.setUsed(productVO.getNoUsedImages(),false);
         productService.removeById(id);
     }
 
     // 商品上架
     @PatchMapping("/{id}/publish")
-    public void publish(@PathVariable("id") Long id) {
+    public void publish(@PathVariable("id") String id) {
         if (!productService.publishProduct(id)) {
             throw new ServerException(ErrorEnum.UPDATE_ERROR);
         }
@@ -95,7 +95,7 @@ public class ProductController {
 
     // 商品下架
     @PatchMapping("/{id}/unpublish")
-    public void unpublish(@PathVariable("id") Long id) {
+    public void unpublish(@PathVariable("id") String id) {
         if (!productService.unpublishProduct(id)) {
             throw new ServerException(ErrorEnum.UPDATE_ERROR);
         }

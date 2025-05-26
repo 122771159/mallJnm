@@ -1,4 +1,8 @@
 package com.jnm.mallJnm.mapper;
 
-public interface GroupProductPriceMapper {
+import com.jnm.mallJnm.model.GroupProductPrice;
+import org.apache.ibatis.annotations.Mapper;
+
+@Mapper
+public interface GroupProductPriceMapper extends DefaultMapper<GroupProductPrice> {
 }

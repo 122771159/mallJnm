@@ -1,10 +1,12 @@
 package com.jnm.mallJnm.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jnm.mallJnm.exception.ServerException;
+import com.jnm.mallJnm.mapper.vo.CustomerVOMapper;
 import com.jnm.mallJnm.model.Customer;
 import com.jnm.mallJnm.model.enums.ErrorEnum;
+import com.jnm.mallJnm.model.vo.CustomerVO;
+import com.jnm.mallJnm.mybatisplus.wrapper.JoinWrapper;
 import com.jnm.mallJnm.service.CustomerService;
 import com.jnm.mallJnm.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,24 +23,28 @@ public class CustomerController {
     private CustomerService customerService;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private CustomerVOMapper customerVOMapper;
 
     // 1. 分页查询客户（主路径）
     @GetMapping
-    public Page<Customer> pageQuery(
+    public Page<CustomerVO> pageQuery(
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String account,
+            @RequestParam(required = false) String groupId,
             @RequestParam(required = false) Integer status) {
-        
-        QueryWrapper<Customer> wrapper = new QueryWrapper<>();
-        wrapper.select("id, name, account, status, create_time, update_time");
-        wrapper.like(!StringUtil.isNullOrEmpty(name), "name", name);
-        wrapper.like(!StringUtil.isNullOrEmpty(account), "account", account);
-        wrapper.eq(status != null, "status", status);
-        wrapper.orderByDesc("create_time");
-        
-        return customerService.page(new Page<>(pageNum, pageSize), wrapper);
+        JoinWrapper<CustomerVO> joinWrapper = new JoinWrapper<>();
+        joinWrapper.alias("c");
+        joinWrapper.select("c.id, c.name, c.account, c.status, c.create_time as createTime, c.update_time as updateTime,c.group_id as groupId,g.name as groupName");
+        joinWrapper.like(!StringUtil.isNullOrEmpty(name), "c.name", name);
+        joinWrapper.like(!StringUtil.isNullOrEmpty(account), "c.account", account);
+        joinWrapper.like(!StringUtil.isNullOrEmpty(groupId), "c.group_id", groupId);
+        joinWrapper.eq(status != null, "c.status", status);
+        joinWrapper.leftJoin("jnm_customer_group as g on g.id = c.group_id");
+        joinWrapper.orderByDesc("c.create_time");
+        return customerVOMapper.selectJoinPage(new Page<>(pageNum, pageSize), joinWrapper);
     }
 
     // 2. 创建客户
