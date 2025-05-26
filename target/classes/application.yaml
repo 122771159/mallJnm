@@ -1,0 +1,43 @@
+spring:
+  task:
+    scheduling:
+      pool:
+        size: 10
+  datasource:
+    url: jdbc:mysql://localhost:3306/mallJnm?rewriteBatchedStatements=true&useSSL=false
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      maximum-pool-size: 10
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
+  mvc:
+    format:
+      date-time: yyyy-MM-dd HH:mm:ss
+  servlet:
+    multipart:
+      max-file-size: 1MB
+      max-request-size: 10MB
+
+mybatis-plus:
+  configuration:
+    #在映射实体或者属性时，将数据库中表名和字段名中的下划线去掉，按照驼峰命名法映射
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      table-prefix: jnm_
+      #mybatis-plus:
+      #  global-config:
+      #    db-config:
+      #      table-prefix: op_
+      #  configuration:
+      #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#server:
+#  servlet:
+#    context-path: /jnm
