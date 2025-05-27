@@ -1,9 +1,9 @@
 package com.jnm.mallJnm.security.filter;
 
-import com.jnm.mallJnm.util.ResponseUtil;
-import com.jnm.mallJnm.util.TokenUtil;
 import com.jnm.mallJnm.controller.result.Result;
 import com.jnm.mallJnm.security.token.JwtAuthenticationToken;
+import com.jnm.mallJnm.util.ResponseUtil;
+import com.jnm.mallJnm.util.TokenUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.micrometer.common.util.StringUtils;
@@ -11,6 +11,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -24,7 +25,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final RequestMatcher requiresAuthenticationRequestMatcher;
     private AuthenticationManager authenticationManager;

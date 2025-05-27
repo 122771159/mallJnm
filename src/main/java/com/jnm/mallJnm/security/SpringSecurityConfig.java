@@ -82,8 +82,7 @@ public class SpringSecurityConfig {
         AccountPasswordAuthenticationFilter filter = new AccountPasswordAuthenticationFilter();
         filter.setUsersService(usersService);
         filter.setAdminService(adminService);
-//        filter.setStudentsService(studentsService);
-//        filter.setCompaniesService(companiesService);
+
         filter.setAuthenticationManager(authenticationManager());
         return filter;
     }
@@ -117,6 +116,7 @@ public class SpringSecurityConfig {
         http.authorizeHttpRequests(auth -> auth.requestMatchers("/error", "/email/**","/users/register","/upload","/ws/**","/verify").permitAll());
         http.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.OPTIONS, "/.*").permitAll());
         http.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.GET, "/image/*").permitAll());
+        http.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.GET, "/frontend/**").permitAll());
 
 //        http.authorizeHttpRequests().requestMatchers("/error", "/verify", "/supplier","/department/paged","/department").permitAll();
 //        http.authorizeHttpRequests().requestMatchers(HttpMethod.GET, "/inventory").permitAll();
