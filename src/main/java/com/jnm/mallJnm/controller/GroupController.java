@@ -1,9 +1,12 @@
 package com.jnm.mallJnm.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jnm.mallJnm.exception.ServerException;
 import com.jnm.mallJnm.exception.ValidatedException;
+import com.jnm.mallJnm.mapper.vo.CustomerVOMapper;
 import com.jnm.mallJnm.model.Customer;
 import com.jnm.mallJnm.model.CustomerGroup;
 import com.jnm.mallJnm.model.enums.ErrorEnum;
@@ -16,6 +19,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -24,9 +28,10 @@ public class GroupController {
 
     @Autowired
     private CustomerGroupService customerGroupService;
-
     @Autowired
     private CustomerService customerService;
+    @Autowired
+    private CustomerVOMapper customerVOMapper;
 
     // 1. 创建客户组
     @PostMapping
@@ -83,7 +88,6 @@ public class GroupController {
             @RequestParam(name = "index", defaultValue = "1") int index,
             @RequestParam(name = "size", defaultValue = "10") int size,
             @RequestParam(name = "name", required = false) String name) {
-
         Page<CustomerGroup> page = new Page<>(index, size);
         QueryWrapper<CustomerGroup> wrapper = new QueryWrapper<>();
         wrapper.like(!StringUtil.isNullOrEmpty(name), "name", name);
@@ -91,7 +95,49 @@ public class GroupController {
         return customerGroupService.page(page, wrapper);
     }
 
-    // 6. 获取所有客户组列表（通常用于下拉选择）
+    @GetMapping("/customers")
+    public Page<Customer> listCustomers(
+            @RequestParam(defaultValue = "1") int pageNum,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String account,
+            @RequestParam(required = false) String gid,
+            @RequestParam(defaultValue = "1") String flag
+    ) {
+        LambdaQueryWrapper<Customer> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(!StringUtil.isNullOrEmpty(name), Customer::getName, name);
+        wrapper.eq(!StringUtil.isNullOrEmpty(account), Customer::getAccount, account);
+        if ("1".equals(flag)) {
+            wrapper.eq(Customer::getGroupId, gid);
+        } else if ("0".equals(flag)) {
+            wrapper.isNull(Customer::getGroupId);
+        }
+        return customerService.page(new Page<>(pageNum, pageSize), wrapper);
+    }
+
+    @PostMapping("/customers/batch/{gid}")
+    public void saveGroupsBatch(@RequestBody ArrayList<String> ids, @PathVariable String gid) {
+        customerService.settingGroupBatch(ids, gid);
+    }
+
+    @PutMapping("/customers/batch/{gid}")
+    public void removeGroupBatch(@RequestBody ArrayList<String> ids, @PathVariable String gid) {
+        customerService.removeGroupBatch(ids, gid);
+    }
+
+    @DeleteMapping("/customer")
+    public void removeGroup(
+            @RequestParam String gid,
+            @RequestParam String id
+    ) {
+        LambdaUpdateWrapper<Customer> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(Customer::getGroupId, gid);
+        wrapper.eq(Customer::getId, id);
+        wrapper.set(Customer::getGroupId, null);
+        customerService.update(wrapper);
+    }
+
+    //  获取所有客户组列表（通常用于下拉选择）
     @GetMapping("/all")
     public List<CustomerGroup> listAllGroups() {
         return customerGroupService.list(new QueryWrapper<CustomerGroup>().orderByAsc("name"));

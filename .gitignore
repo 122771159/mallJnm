@@ -1,0 +1,113 @@
+### 通用忽略 ###
+*.log
+*.swp
+*.bak
+*.tmp
+*.orig
+*~
+.DS_Store
+.idea
+*.iml
+.vscode/
+*.sw?
+.nb-gradle/
+.attach_pid*
+
+### 构建输出 ###
+/target/
+/bin/
+/build/
+/out/
+/project/target/
+/project/project/target/
+
+### 依赖管理 ###
+.gradle/
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+### Maven 特定 ###
+pom.xml.versionsBackup
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+### Gradle 特定 ###
+.gradle
+/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+### IDE ###
+.idea/
+*.ipr
+*.iws
+*.iml
+.classpath
+.project
+.settings/
+*.launch
+.factorypath
+
+### 日志文件 ###
+logs/
+*.log
+/log/
+/logs/
+*.log.*
+/logback.xml
+
+### 测试相关 ###
+/test-output/
+/test-results/
+/coverage/
+/surefire-reports/
+/failsafe-reports/
+
+### 数据库相关 ###
+*.db
+*.sql
+*.h2.db
+/db/
+
+### 环境配置文件 ###
+*.properties
+*.yml
+!application*.yml
+!application*.properties
+!bootstrap*.yml
+!bootstrap*.properties
+
+### 前端构建相关 ###
+/node_modules/
+/dist/
+/static/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+### 其他 ###
+*.jar
+*.war
+*.ear
+*.zip
+*.tar
+*.tar.gz
+*.class
+*.factory
+*.cache
+*.prefs
+*.lock
+*.keystore
+*.jks
+*.cert
+*.cer
+*.pfx
+*.p12
+*.der
+*.rsa
+*.pub
+*.srl
+*.crt
+*.key
+*.pem

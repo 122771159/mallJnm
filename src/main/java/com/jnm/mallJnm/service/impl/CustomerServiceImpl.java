@@ -1,11 +1,13 @@
 package com.jnm.mallJnm.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jnm.mallJnm.mapper.CustomerMapper;
 import com.jnm.mallJnm.model.Customer;
 import com.jnm.mallJnm.service.CustomerService;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class CustomerServiceImpl 
@@ -33,5 +35,28 @@ public class CustomerServiceImpl
         return lambdaQuery()
                 .eq(Customer::getAccount, account)
                 .one();
+    }
+
+    @Override
+    public void settingGroupBatch(List<String> ids, String group_id) {
+        if (ids == null || ids.isEmpty()) {
+            throw new IllegalArgumentException("ID列表不能为空");
+        }
+        LambdaUpdateWrapper<Customer> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.in(Customer::getId, ids);
+        wrapper.set(Customer::getGroupId, group_id);
+        this.update(wrapper);
+    }
+
+    @Override
+    public void removeGroupBatch(List<String> ids, String group_id) {
+        if (ids == null || ids.isEmpty()) {
+            throw new IllegalArgumentException("ID列表不能为空");
+        }
+        LambdaUpdateWrapper<Customer> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.in(Customer::getId, ids);
+        wrapper.eq(Customer::getGroupId, group_id);
+        wrapper.set(Customer::getGroupId, null);
+        this.update(wrapper);
     }
 }

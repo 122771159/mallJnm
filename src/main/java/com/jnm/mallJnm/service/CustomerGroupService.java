@@ -11,4 +11,6 @@ public interface CustomerGroupService extends IService<CustomerGroup> {
      * @return true 如果已存在，false 如果不存在
      */
     boolean isGroupNameExisted(String groupName, String excludeGroupId);
+
+
 }
