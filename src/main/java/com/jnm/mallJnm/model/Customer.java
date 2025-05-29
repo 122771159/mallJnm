@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
@@ -18,7 +17,6 @@ public class Customer {
     private String name;  // 客户名称
     @NotBlank(message = "登录账号不能为空")
     private String account;  // 登录账号
-    @JsonIgnore
     private String password;  // 登录密码
     private String openid;  // 微信openid（用于微信登录关联）
     private Integer status;  // 状态（0-禁用，1-启用）

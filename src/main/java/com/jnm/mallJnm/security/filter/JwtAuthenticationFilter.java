@@ -43,7 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String authInfo = request.getHeader("Authorization");
             if (StringUtils.isNotBlank(authInfo) && authInfo.startsWith("Bearer ")) {
                 String token = authInfo.substring(7);
-                if (!"".equals(token)) {
+                if (!token.isEmpty()) {
                     try {
                         if (TokenUtil.isExpiration(token)) {
                             unsuccessfulAuthentication(response, "Token已过期");

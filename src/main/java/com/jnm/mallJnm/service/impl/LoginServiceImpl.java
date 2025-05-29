@@ -2,9 +2,9 @@ package com.jnm.mallJnm.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.jnm.mallJnm.mapper.AdminMapper;
-import com.jnm.mallJnm.mapper.UsersMapper;
+import com.jnm.mallJnm.mapper.CustomerMapper;
 import com.jnm.mallJnm.model.Admin;
-import com.jnm.mallJnm.model.Users;
+import com.jnm.mallJnm.model.Customer;
 import com.jnm.mallJnm.model.vo.User;
 import com.jnm.mallJnm.service.LoginService;
 import io.micrometer.common.util.StringUtils;
@@ -27,7 +27,7 @@ import java.util.List;
 public class LoginServiceImpl implements LoginService {
 
     @Resource
-    UsersMapper usersMapper;
+    CustomerMapper customerMapper;
     @Resource
     AdminMapper adminMapper;
 
@@ -47,19 +47,17 @@ public class LoginServiceImpl implements LoginService {
             return new User(admin.getId(), admin.getUsername(), "", admin.getPassword(),
                     userType, listUserPermissions(userType), true);
         }
-        else if(userType.equals("CUSTOMER")){
-            QueryWrapper<Users> usersQueryWrapper = new QueryWrapper<>();
-            usersQueryWrapper.eq("username", account);
-            Users users = usersMapper.selectOne(usersQueryWrapper);
+        else {
+            QueryWrapper<Customer> usersQueryWrapper = new QueryWrapper<>();
+            usersQueryWrapper.eq("account", account);
+            Customer users = customerMapper.selectOne(usersQueryWrapper);
             if (users == null) {
                 throw new UsernameNotFoundException("用户不存在");
             }
-            return new User(users.getId(), users.getUsername(), "", users.getPassword(),
+            return new User(users.getId(), users.getAccount(), "", users.getPassword(),
                     userType, listUserPermissions(userType), true);
         }
-        else {
-            throw new InternalAuthenticationServiceException("用户类型错误");
-        }
+
     }
 
     @Cacheable(key = "#userType + #id")
@@ -75,16 +73,14 @@ public class LoginServiceImpl implements LoginService {
             }
             return new User(admin.getId(), admin.getUsername(), "", admin.getPassword(),
                     userType, listUserPermissions(userType), true);
-        }
-        if (userType.equals("CUSTOMER")) {
-            Users users = usersMapper.selectById(id);
+        }else{
+            Customer users = customerMapper.selectById(id);
             if (users == null) {
                 throw new UsernameNotFoundException("用户不存在");
             }
-            return new User(users.getId(), users.getUsername(), "", users.getPassword(),
+            return new User(users.getId(), users.getAccount(), "", users.getPassword(),
                     userType, listUserPermissions(userType), true);
         }
-        return null;
     }
 
 

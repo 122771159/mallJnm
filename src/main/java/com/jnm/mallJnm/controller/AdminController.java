@@ -5,9 +5,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jnm.mallJnm.exception.ServerException;
 import com.jnm.mallJnm.model.Admin;
 import com.jnm.mallJnm.model.enums.ErrorEnum;
-import com.jnm.mallJnm.model.enums.UserType;
-import com.jnm.mallJnm.util.StringUtil;
 import com.jnm.mallJnm.service.AdminService;
+import com.jnm.mallJnm.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -22,11 +21,14 @@ public class AdminController {
     @GetMapping
     public Page<Admin> list(@RequestParam(name = "index", defaultValue = "1") int index,
                             @RequestParam(name = "size", defaultValue = "10") int size,
-                            @RequestParam(name = "username", required = false) String username) {
+                            @RequestParam(name = "username", required = false) String username,
+                            @RequestParam(name = "userType", required = false) String user_type
+    ) {
         Page<Admin> page = new Page<>(index, size);
         QueryWrapper<Admin> wrapper = new QueryWrapper<>();
-        wrapper.select("id, username, user_type, create_time");
+        wrapper.select("id, username, create_time, user_type");
         wrapper.like(!StringUtil.isNullOrEmpty(username), "username", username);
+        wrapper.like(!StringUtil.isNullOrEmpty(user_type), "user_type", user_type);
         wrapper.orderByDesc("create_time");
         return adminService.page(page, wrapper);
     }
@@ -48,7 +50,6 @@ public class AdminController {
     public void add(@RequestBody Admin admin) {
         try {
             admin.setId(null);
-//            admin.setUserType(UserType.ADMIN.name());
             admin.setPassword(passwordEncoder.encode(admin.getPassword()));
             adminService.save(admin);
         }catch (Exception e){

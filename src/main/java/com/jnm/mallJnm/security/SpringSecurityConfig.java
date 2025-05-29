@@ -8,8 +8,8 @@ import com.jnm.mallJnm.security.handler.UserAuthenticationEntryPoint;
 import com.jnm.mallJnm.security.provider.AccountPasswordAuthenticationProvider;
 import com.jnm.mallJnm.security.provider.JwtAuthenticationProvider;
 import com.jnm.mallJnm.service.AdminService;
+import com.jnm.mallJnm.service.CustomerService;
 import com.jnm.mallJnm.service.LoginService;
-import com.jnm.mallJnm.service.UsersService;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -47,7 +47,7 @@ public class SpringSecurityConfig {
     @Resource
     UserAccessDeniedHandler accessDeniedHandler;
     @Autowired
-    private UsersService usersService;
+    private CustomerService customerService;
     @Autowired
     private AdminService adminService;
     @Autowired
@@ -80,7 +80,7 @@ public class SpringSecurityConfig {
     @Bean
     public AccountPasswordAuthenticationFilter accountPasswordAuthenticationFilter() throws Exception {
         AccountPasswordAuthenticationFilter filter = new AccountPasswordAuthenticationFilter();
-        filter.setUsersService(usersService);
+        filter.setCustomerService(customerService);
         filter.setAdminService(adminService);
 
         filter.setAuthenticationManager(authenticationManager());

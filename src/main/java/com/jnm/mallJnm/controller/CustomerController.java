@@ -37,7 +37,8 @@ public class CustomerController {
             @RequestParam(required = false) Integer status) {
         JoinWrapper<CustomerVO> joinWrapper = new JoinWrapper<>();
         joinWrapper.alias("c");
-        joinWrapper.select("c.id, c.name, c.account, c.status, c.create_time as createTime, c.update_time as updateTime,c.group_id as groupId,g.name as groupName");
+        joinWrapper.select("c.id, c.name, c.account, c.status, c.create_time as createTime," +
+                "c.update_time as updateTime,c.group_id as groupId,g.name as groupName");
         joinWrapper.like(!StringUtil.isNullOrEmpty(name), "c.name", name);
         joinWrapper.like(!StringUtil.isNullOrEmpty(account), "c.account", account);
         joinWrapper.like(!StringUtil.isNullOrEmpty(groupId), "c.group_id", groupId);
@@ -53,7 +54,6 @@ public class CustomerController {
         try {
             customer.setId(null);
             customer.setPassword(passwordEncoder.encode(customer.getPassword()));
-            customer.setStatus(1);
             customerService.save(customer);
         } catch (Exception SQLIntegrityConstraintViolationException) {
             throw new ServerException(201,"登录账号重复");

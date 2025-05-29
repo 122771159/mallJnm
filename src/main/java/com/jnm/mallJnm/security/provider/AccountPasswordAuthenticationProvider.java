@@ -27,11 +27,13 @@ public class AccountPasswordAuthenticationProvider extends AbstractUserDetailsAu
     @Override
     protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
         if (authentication.getCredentials() == null) {
-            throw new BadCredentialsException(this.messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "密码错误"));
+            throw new BadCredentialsException(this.messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials",
+                    "密码错误"));
         } else {
                 String presentedPassword = authentication.getCredentials().toString();
                 if (!this.passwordEncoder.matches(presentedPassword, userDetails.getPassword())) {
-                    throw new BadCredentialsException(this.messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "密码错误"));
+                    throw new BadCredentialsException(this.messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials",
+                            "密码错误"));
                 }
         }
     }
@@ -86,14 +88,14 @@ public class AccountPasswordAuthenticationProvider extends AbstractUserDetailsAu
         }
     }
 
+    protected PasswordEncoder getPasswordEncoder() {
+        return this.passwordEncoder;
+    }
+
     public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
         Assert.notNull(passwordEncoder, "passwordEncoder cannot be null");
         this.passwordEncoder = passwordEncoder;
         this.userNotFoundEncodedPassword = null;
-    }
-
-    protected PasswordEncoder getPasswordEncoder() {
-        return this.passwordEncoder;
     }
 
     public LoginService getLoginService() {
