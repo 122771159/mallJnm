@@ -7,4 +7,6 @@ import com.jnm.mallJnm.model.Admin;
 public interface AdminService extends IService<Admin> {
 
     boolean resetPassword(String id, String newPassword);
+
+    Admin getSalesByOpenId(String username);
 }

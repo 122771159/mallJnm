@@ -1,5 +1,7 @@
 package com.jnm.mallJnm.service;
 
+import com.jnm.mallJnm.model.vo.ProductDisplayVO;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -21,5 +23,5 @@ public interface PriceCalculationService {
      * @param customerGroupId 当前客户所属的客户组ID (可为null)
      * @return effectivePrice
      */
-    BigDecimal calculateEffectivePrice(String productId, String customerId, String customerGroupId);
+    ProductDisplayVO calculateEffectivePrice(String productId, String customerId, String customerGroupId);
 }

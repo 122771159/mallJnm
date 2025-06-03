@@ -14,7 +14,7 @@ public class CustomerProductPrice {
     @TableId(type = IdType.ASSIGN_UUID)
     private String id;
     private String customerId;
-    private Long productId;
+    private String productId;
     private BigDecimal customPrice;
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;

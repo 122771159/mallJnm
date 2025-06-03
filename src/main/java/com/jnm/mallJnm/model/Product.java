@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class Product {
     @TableId(type = IdType.ASSIGN_UUID)
     private String id;
-    private Integer categoryId;
+    private String categoryId;
     private String name;
     private String code;
     private String description;

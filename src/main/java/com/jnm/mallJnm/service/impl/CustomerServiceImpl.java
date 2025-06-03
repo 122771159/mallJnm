@@ -1,5 +1,6 @@
 package com.jnm.mallJnm.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jnm.mallJnm.mapper.CustomerMapper;
@@ -58,5 +59,12 @@ public class CustomerServiceImpl
         wrapper.eq(Customer::getGroupId, group_id);
         wrapper.set(Customer::getGroupId, null);
         this.update(wrapper);
+    }
+
+    @Override
+    public Customer getByOpenId(String openId) {
+        LambdaQueryWrapper<Customer> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Customer::getOpenid, openId);
+        return this.getOne(wrapper);
     }
 }

@@ -30,7 +30,7 @@ public class ProductController {
             @RequestParam(name = "index", defaultValue = "1") int index,
             @RequestParam(name = "size", defaultValue = "10") int size,
             @RequestParam(name = "name", required = false) String name,
-            @RequestParam(name = "categoryId", required = false) Integer categoryId) {
+            @RequestParam(name = "categoryId", required = false) String categoryId) {
         
         Page<Product> page = new Page<>(index, size);
         QueryWrapper<Product> wrapper = new QueryWrapper<>();

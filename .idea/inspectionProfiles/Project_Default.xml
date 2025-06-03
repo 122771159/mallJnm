@@ -13,6 +13,7 @@
       <option name="customHeaders">
         <set>
           <option value="User-ID" />
+          <option value="tokenExpiresIn" />
         </set>
       </option>
     </inspection_tool>

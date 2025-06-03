@@ -12,7 +12,7 @@ public class CategoryWithProductsVO {
     private Integer sortOrder; // 分类排序权重
     private String description; // 分类描述
     private Boolean isShow; // 分类是否显示
-    private List<ProductDisplayVO> products; // 该分类下的商品列表（包含最终价格）
+    private List<ProductDisplayVO> childrens; // 该分类下的商品列表（包含最终价格）
 
     // 如果需要，可以添加分页信息，例如：
     // private long productTotal;

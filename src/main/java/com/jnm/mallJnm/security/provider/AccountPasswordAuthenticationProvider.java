@@ -31,10 +31,13 @@ public class AccountPasswordAuthenticationProvider extends AbstractUserDetailsAu
                     "密码错误"));
         } else {
                 String presentedPassword = authentication.getCredentials().toString();
-                if (!this.passwordEncoder.matches(presentedPassword, userDetails.getPassword())) {
-                    throw new BadCredentialsException(this.messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials",
-                            "密码错误"));
+                if(!"".equals(presentedPassword)){ // 微信一键登录 没有密码，若不是空字符串，进行判断密码是否正常
+                    if (!this.passwordEncoder.matches(presentedPassword, userDetails.getPassword())) {
+                        throw new BadCredentialsException(this.messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials",
+                                "密码错误"));
+                    }
                 }
+
         }
     }
     // 检索用户

@@ -73,9 +73,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private void successfulAuthentication(HttpServletResponse response, Authentication authResult, Claims claims) {
         SecurityContextHolder.getContext().setAuthentication(authResult);
-        if (System.currentTimeMillis() > claims.getIssuedAt().getTime() + 1000 * 60 * 60 * 24 * 7) {
+        long ExpireTime = claims.getIssuedAt().getTime() + TokenUtil.tokenExpiration;
+        if (ExpireTime - System.currentTimeMillis() < TokenUtil.tokenFreeTimeout) {  // 判断是否快过期
             String newToken = TokenUtil.createToken(claims.getId(), claims.getSubject(), (String) claims.get("userType"));
             response.setHeader("Authorization", newToken);
+            response.setHeader("tokenExpiresIn", String.valueOf(TokenUtil.tokenExpiration));
         }
     }
 

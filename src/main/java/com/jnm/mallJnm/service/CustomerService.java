@@ -12,4 +12,5 @@ public interface CustomerService extends IService<Customer> {
     Customer getByAccount(String account);      // 根据账号获取客户
     void settingGroupBatch(List<String> ids, String group_id);
     void removeGroupBatch(List<String> ids,String group_id);
+    Customer getByOpenId(String openId);
 }

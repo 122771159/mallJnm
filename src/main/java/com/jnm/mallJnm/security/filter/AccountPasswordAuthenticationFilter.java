@@ -41,7 +41,7 @@ public class AccountPasswordAuthenticationFilter extends AbstractAuthenticationP
     public static final String SPRING_SECURITY_FORM_USERTYPE_KEY = "userType";
     public static final String SPRING_SECURITY_FORM_VERIFY_KEY_KEY = "verifyKey";
     public static final String SPRING_SECURITY_FORM_VERIFY_CODE_KEY = "verifyCode";
-    public static final String SPRING_SECURITY_FORM_LOGIN_TYPE = "loginType";
+    public static final String SPRING_SECURITY_FORM_OPEN_ID = "openId";
     @Autowired
     CustomCacheManager cacheManager;
     private CustomerService customerService;
@@ -51,7 +51,7 @@ public class AccountPasswordAuthenticationFilter extends AbstractAuthenticationP
     private String userTypeParameter = SPRING_SECURITY_FORM_USERTYPE_KEY;
     private String verifyKeyParameter = SPRING_SECURITY_FORM_VERIFY_KEY_KEY;
     private String verifyCodeParameter = SPRING_SECURITY_FORM_VERIFY_CODE_KEY;
-    private String loginTypeParameter = SPRING_SECURITY_FORM_LOGIN_TYPE;
+    private String openIdParameter = SPRING_SECURITY_FORM_OPEN_ID;
     private boolean postOnly = true;
 
     public AccountPasswordAuthenticationFilter() {
@@ -77,35 +77,53 @@ public class AccountPasswordAuthenticationFilter extends AbstractAuthenticationP
         String userType = obtainUserType(data);
         String verifyKey = obtainVerifyKey(data);
         String verifyCode = obtainVerifyCode(data);
+        String openId = obtainOpenId(data);
 //        String loginType = obtainLoginType(data);
-        if (StringUtil.isNullOrEmpty(username)) {
-            throw new VerifyException("用户名不可为空");
-        }
         if (userType == null) {
             throw new VerifyException("用户类型不可为空");
         }
-        if (StringUtil.isNullOrEmpty(password)) {
-            throw new VerifyException("密码不可为空");
-        }
-        if (UserType.ADMIN.name().equals(userType)) {
-            if (verifyKey != null && verifyCode != null) {
-                Cache cache = cacheManager.getCache("verifyImg");
-                if (cache != null) {
-                    String cachedCode = cache.get(verifyKey, String.class);
-                    if (cachedCode == null || !cachedCode.equalsIgnoreCase(verifyCode)) {
-                        throw new VerifyException("验证码错误");
+        AccountPasswordAuthenticationToken authRequest;
+        if(!StringUtil.isNullOrEmpty(openId)) { // 微信一键登录
+             String userName;
+            if("CUSTOMER".equals(userType)) {
+                Customer customer = customerService.getByOpenId(openId);
+                if(customer == null) {
+                    throw new VerifyException("没有账号绑定此微信");
+                }
+                userName = customer.getAccount();
+
+            }else{
+                Admin admin = adminService.getSalesByOpenId(openId);
+                if(admin == null) {
+                    throw new VerifyException("没有账号绑定此微信");
+                }
+                userName = admin.getUsername();
+            }
+            authRequest = new AccountPasswordAuthenticationToken(
+                    userName, "", userType);
+        }else{ // 管理员登录，账号密码登录
+            if (StringUtil.isNullOrEmpty(username)) {
+                throw new VerifyException("用户名不可为空");
+            }
+            if (StringUtil.isNullOrEmpty(password)) {
+                throw new VerifyException("密码不可为空");
+            }
+            if (UserType.ADMIN.name().equals(userType)) {
+                if (verifyKey != null && verifyCode != null) {
+                    Cache cache = cacheManager.getCache("verifyImg");
+                    if (cache != null) {
+                        String cachedCode = cache.get(verifyKey, String.class);
+                        if (cachedCode == null || !cachedCode.equalsIgnoreCase(verifyCode)) {
+                            throw new VerifyException("验证码错误");
+                        }
+                        cache.evict(verifyKey);
                     }
-                    cache.evict(verifyKey);
                 }
             }
+            authRequest = new AccountPasswordAuthenticationToken(
+                    username, password, userType);
         }
-//        else if(UserType.CUSTOMER.name().equals(userType)){
-//
-//        }else{
-//            System.out.println("其他");
-//        }
-        AccountPasswordAuthenticationToken authRequest = new AccountPasswordAuthenticationToken(
-                username, password, userType);
+
         setDetails(request, authRequest);
         return this.getAuthenticationManager().authenticate(authRequest);
     }
@@ -117,12 +135,7 @@ public class AccountPasswordAuthenticationFilter extends AbstractAuthenticationP
         }
         User user = (User) authResult.getPrincipal();
         String token;
-        if (!UserType.ADMIN.name().equals(user.getUserType())) {
-            // 不是管理员则token不过期
-            token = TokenUtil.createToken(user.getId(), user.getName(), user.getUserType(), true);
-        } else {
-            token = TokenUtil.createToken(user.getId(), user.getName(), user.getUserType());
-        }
+        token = TokenUtil.createToken(user.getId(), user.getName(), user.getUserType());
         Object obj = null;
         if (UserType.ADMIN.name().equals(user.getUserType())) {
             Admin admin = adminService.getById(user.getId());
@@ -137,6 +150,7 @@ public class AccountPasswordAuthenticationFilter extends AbstractAuthenticationP
         data.put("token", token);
         data.put("user", obj);
         data.put("roles", user.getUserType());
+        data.put("tokenExpiresIn",TokenUtil.tokenExpiration);
         DataResult<Map<String, Object>> result = new DataResult<>(data);
         ResponseUtil.outOfJson(response, result);
     }
@@ -170,8 +184,8 @@ public class AccountPasswordAuthenticationFilter extends AbstractAuthenticationP
         return request.get(this.verifyCodeParameter);
     }
 
-    protected String obtainLoginType(Map<String, String> request) {
-        return request.get(this.loginTypeParameter);
+    protected String obtainOpenId(Map<String, String> request) {
+        return request.get(this.openIdParameter);
     }
 
     protected void setDetails(HttpServletRequest request, AccountPasswordAuthenticationToken authRequest) {

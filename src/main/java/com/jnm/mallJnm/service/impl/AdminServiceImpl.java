@@ -21,4 +21,9 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         wrapper.set("password", passwordEncoder.encode(newPassword)).eq("id", id);
         return super.update(wrapper);
     }
+
+    @Override
+    public Admin getSalesByOpenId(String username) {
+        return null;
+    }
 }

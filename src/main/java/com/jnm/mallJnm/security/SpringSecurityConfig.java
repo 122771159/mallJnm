@@ -113,10 +113,9 @@ public class SpringSecurityConfig {
         //cors跨域支持
         http.cors(Customizer.withDefaults()).csrf(AbstractHttpConfigurer::disable);
         //放开一些接口的权限校验
-        http.authorizeHttpRequests(auth -> auth.requestMatchers("/error", "/email/**","/users/register","/upload","/ws/**","/verify").permitAll());
+        http.authorizeHttpRequests(auth -> auth.requestMatchers("/wx/**","/error", "/email/**","/users/register","/upload","/ws/**","/verify").permitAll());
         http.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.OPTIONS, "/.*").permitAll());
         http.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.GET, "/image/*").permitAll());
-        http.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.GET, "/frontend/**").permitAll());
 
 //        http.authorizeHttpRequests().requestMatchers("/error", "/verify", "/supplier","/department/paged","/department").permitAll();
 //        http.authorizeHttpRequests().requestMatchers(HttpMethod.GET, "/inventory").permitAll();

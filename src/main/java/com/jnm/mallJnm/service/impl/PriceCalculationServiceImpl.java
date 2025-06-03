@@ -3,10 +3,12 @@ package com.jnm.mallJnm.service.impl;
 import com.jnm.mallJnm.model.CustomerProductPrice;
 import com.jnm.mallJnm.model.GroupProductPrice;
 import com.jnm.mallJnm.model.Product;
+import com.jnm.mallJnm.model.vo.ProductDisplayVO;
 import com.jnm.mallJnm.service.CustomerProductPriceService;
 import com.jnm.mallJnm.service.GroupProductPriceService;
 import com.jnm.mallJnm.service.PriceCalculationService;
 import com.jnm.mallJnm.service.ProductService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -68,15 +70,13 @@ public class PriceCalculationServiceImpl implements PriceCalculationService {
                     .in(CustomerProductPrice::getProductId, productIds) // 注意 productId 类型是 Long
                     .list();
 
-            // productId 在 CustomerProductPrice 中是 Long 类型，需要转换
-            Map<Long, BigDecimal> customerPriceMap = customerPrices.stream()
+            Map<String, BigDecimal> customerPriceMap = customerPrices.stream()
                     .collect(Collectors.toMap(CustomerProductPrice::getProductId, CustomerProductPrice::getCustomPrice));
 
             for (String productIdStr : productIds) {
                 try {
-                    Long productIdLong = Long.parseLong(productIdStr); // ProductId 在Product表中是bigint
-                    if (customerPriceMap.containsKey(productIdLong)) {
-                        effectivePrices.put(productIdStr, customerPriceMap.get(productIdLong));
+                    if (customerPriceMap.containsKey(productIdStr)) {
+                        effectivePrices.put(productIdStr, customerPriceMap.get(productIdStr));
                     }
                 } catch (NumberFormatException e) {
                     // 处理 productIdStr 不能转换为 Long 的情况，例如记录日志
@@ -88,7 +88,7 @@ public class PriceCalculationServiceImpl implements PriceCalculationService {
     }
 
     @Override
-    public BigDecimal calculateEffectivePrice(String productId, String customerId, String customerGroupId) {
+    public ProductDisplayVO calculateEffectivePrice(String productId, String customerId, String customerGroupId) {
         Product product = productService.getById(productId);
         if (product == null) {
             return null; // 或抛出异常
@@ -122,6 +122,10 @@ public class PriceCalculationServiceImpl implements PriceCalculationService {
             }
 
         }
-        return effectivePrice;
+        ProductDisplayVO displayVO = new ProductDisplayVO();
+        BeanUtils.copyProperties(product, displayVO);
+        displayVO.setDisplayPrice(effectivePrice);
+        displayVO.setMainImage(product.getMainImage());
+        return displayVO;
     }
 }
