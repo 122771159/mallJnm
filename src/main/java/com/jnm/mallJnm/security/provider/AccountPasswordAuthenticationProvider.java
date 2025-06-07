@@ -31,11 +31,9 @@ public class AccountPasswordAuthenticationProvider extends AbstractUserDetailsAu
                     "密码错误"));
         } else {
                 String presentedPassword = authentication.getCredentials().toString();
-                if(!"".equals(presentedPassword)){ // 微信一键登录 没有密码，若不是空字符串，进行判断密码是否正常
-                    if (!this.passwordEncoder.matches(presentedPassword, userDetails.getPassword())) {
-                        throw new BadCredentialsException(this.messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials",
-                                "密码错误"));
-                    }
+                if (!this.passwordEncoder.matches(presentedPassword, userDetails.getPassword())) {
+                    throw new BadCredentialsException(this.messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials",
+                            "密码错误"));
                 }
 
         }
@@ -48,7 +46,14 @@ public class AccountPasswordAuthenticationProvider extends AbstractUserDetailsAu
         try {
             AccountPasswordAuthenticationToken token = (AccountPasswordAuthenticationToken) authentication;
             // 根据用户名查询用户，并返回UserDetails
-            UserDetails loadedUser = this.getLoginService().loadByAccount(username, token.getUserType());
+            String userType = token.getUserType();
+            String openId = token.getOpenId();
+            UserDetails loadedUser;
+            if("".equals(userType)){
+                loadedUser = loginService.loadByAccount(username,openId);
+            }else{
+                loadedUser = loginService.loadByAccountType(username, token.getUserType(),openId);
+            }
             if (loadedUser == null) {
                 throw new InternalAuthenticationServiceException("UserDetailsService returned null, which is an interface contract violation");
             } else {

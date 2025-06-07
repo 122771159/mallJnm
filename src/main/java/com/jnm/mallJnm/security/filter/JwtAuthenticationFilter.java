@@ -24,20 +24,22 @@ import org.springframework.util.Assert;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final RequestMatcher requiresAuthenticationRequestMatcher;
+    private final List<String> ignoreUrls = List.of("login", "/image", "/wx/getOpenid","/verify");
     private AuthenticationManager authenticationManager;
     private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource = new WebAuthenticationDetailsSource();
-
     public JwtAuthenticationFilter() {
         this.requiresAuthenticationRequestMatcher = new RequestHeaderRequestMatcher("Authorization");
+
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
-        if (!requiresAuthentication(request)) {
+        if (!requiresAuthentication(request) || IsIgnoreUrls(request)) {
             chain.doFilter(request, response);
         } else {
             String authInfo = request.getHeader("Authorization");
@@ -46,7 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (!token.isEmpty()) {
                     try {
                         if (TokenUtil.isExpiration(token)) {
-                            unsuccessfulAuthentication(response, "Token已过期");
+                            unsuccessfulAuthentication(response,  "Token已过期");
                             return;
                         }
                         Claims claims = TokenUtil.getTokenClaims(token);
@@ -78,6 +80,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String newToken = TokenUtil.createToken(claims.getId(), claims.getSubject(), (String) claims.get("userType"));
             response.setHeader("Authorization", newToken);
             response.setHeader("tokenExpiresIn", String.valueOf(TokenUtil.tokenExpiration));
+            response.setHeader("tokenFreeTimeout", String.valueOf(TokenUtil.tokenFreeTimeout));
         }
     }
 
@@ -90,7 +93,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private void setDetails(HttpServletRequest request, JwtAuthenticationToken authRequest) {
         authRequest.setDetails(this.authenticationDetailsSource.buildDetails(request));
     }
-
+    public Boolean IsIgnoreUrls(HttpServletRequest request){
+        String requestUri = request.getRequestURI();
+        return ignoreUrls.stream().anyMatch(requestUri::contains);
+    }
     private boolean requiresAuthentication(HttpServletRequest request) {
         return this.requiresAuthenticationRequestMatcher.matches(request);
     }

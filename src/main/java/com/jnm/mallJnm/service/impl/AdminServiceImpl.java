@@ -1,5 +1,6 @@
 package com.jnm.mallJnm.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jnm.mallJnm.mapper.AdminMapper;
@@ -23,7 +24,9 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
     }
 
     @Override
-    public Admin getSalesByOpenId(String username) {
-        return null;
+    public Admin getSalesByOpenId(String openId) {
+        LambdaQueryWrapper<Admin> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Admin::getOpenid, openId);
+        return getOne(wrapper);
     }
 }

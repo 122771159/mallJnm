@@ -5,8 +5,8 @@ import lombok.Getter;
 
 @Getter
 public enum ErrorEnum {
-    NOT_LOGIN(101, "请先登录后访问"),
-    NO_AUTHORITY(102, "没有访问权限"),
+    NOT_LOGIN(104, "请先登录后访问"),
+    NO_AUTHORITY(104, "没有访问权限"),
     //103 账号密码登录校验错误
     //104 token登录校验错误
     //105 微信openId登录校验错误
@@ -45,8 +45,10 @@ public enum ErrorEnum {
     OBJECT_EMPTY(311, "传入的对象为空"),
     UPLOAD_FILE_ERROR(308, "上传文件失败"),
     DELETE_FILE_ERROR(309, "删除文件失败"),
-    INVALID_STATUS_ERROR(310, "无效状态");
-
+    INVALID_STATUS_ERROR(310, "无效状态"),
+    AID_EMPTY(311,"业务员或者管理员不能为空"),
+    CID_EMPTY(312,"客户不能为空"),
+    IDENTITY_ERROR(313,"身份信息不正确");
     private final int code;
     private final String msg;
 

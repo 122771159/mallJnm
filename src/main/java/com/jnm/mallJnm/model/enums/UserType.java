@@ -2,10 +2,9 @@ package com.jnm.mallJnm.model.enums;
 
 
 public enum UserType {
+    SUPER("超级管理员"),
     ADMIN("管理员"),
-
-    SALESMAN("业务员"),
-
+    SALES("业务员"),
     CUSTOMER("客户");
 
     private final String name;

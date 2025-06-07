@@ -10,4 +10,6 @@ import lombok.EqualsAndHashCode;
 @TableName("jnm_customer")
 public class CustomerVO extends Customer {
     private String groupName;
+
+    private String username;
 }

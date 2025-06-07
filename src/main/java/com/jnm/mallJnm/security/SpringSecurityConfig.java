@@ -3,12 +3,12 @@ package com.jnm.mallJnm.security;
 
 import com.jnm.mallJnm.security.filter.AccountPasswordAuthenticationFilter;
 import com.jnm.mallJnm.security.filter.JwtAuthenticationFilter;
+import com.jnm.mallJnm.security.filter.OpenIdAuthenticationFilter;
 import com.jnm.mallJnm.security.handler.UserAccessDeniedHandler;
 import com.jnm.mallJnm.security.handler.UserAuthenticationEntryPoint;
 import com.jnm.mallJnm.security.provider.AccountPasswordAuthenticationProvider;
 import com.jnm.mallJnm.security.provider.JwtAuthenticationProvider;
-import com.jnm.mallJnm.service.AdminService;
-import com.jnm.mallJnm.service.CustomerService;
+import com.jnm.mallJnm.security.provider.OpenIdAuthenticationProvider;
 import com.jnm.mallJnm.service.LoginService;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,10 +47,6 @@ public class SpringSecurityConfig {
     @Resource
     UserAccessDeniedHandler accessDeniedHandler;
     @Autowired
-    private CustomerService customerService;
-    @Autowired
-    private AdminService adminService;
-    @Autowired
     private LoginService loginService;
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -68,25 +64,31 @@ public class SpringSecurityConfig {
     protected JwtAuthenticationProvider jwtAuthenticationProvider() {
         return new JwtAuthenticationProvider();
     }
-
+    @Bean
+    protected OpenIdAuthenticationProvider openIdAuthenticationProvider(){
+        return new OpenIdAuthenticationProvider();
+    }
     @Bean
     public AuthenticationManager authenticationManager() throws Exception {
         AuthenticationManagerBuilder managerBuilder = new AuthenticationManagerBuilder(objectPostProcessor);
         managerBuilder.authenticationProvider(accountPasswordAuthenticationProvider());
         managerBuilder.authenticationProvider(jwtAuthenticationProvider());
+        managerBuilder.authenticationProvider(openIdAuthenticationProvider());
         return managerBuilder.build();
     }
 
     @Bean
     public AccountPasswordAuthenticationFilter accountPasswordAuthenticationFilter() throws Exception {
         AccountPasswordAuthenticationFilter filter = new AccountPasswordAuthenticationFilter();
-        filter.setCustomerService(customerService);
-        filter.setAdminService(adminService);
-
         filter.setAuthenticationManager(authenticationManager());
         return filter;
     }
-
+    @Bean
+    public OpenIdAuthenticationFilter openIdAuthenticationFilter() throws Exception {
+        OpenIdAuthenticationFilter filter = new OpenIdAuthenticationFilter();
+        filter.setAuthenticationManager(authenticationManager());
+        return filter;
+    }
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
         JwtAuthenticationFilter filter = new JwtAuthenticationFilter();
@@ -113,7 +115,7 @@ public class SpringSecurityConfig {
         //cors跨域支持
         http.cors(Customizer.withDefaults()).csrf(AbstractHttpConfigurer::disable);
         //放开一些接口的权限校验
-        http.authorizeHttpRequests(auth -> auth.requestMatchers("/wx/**","/error", "/email/**","/users/register","/upload","/ws/**","/verify").permitAll());
+        http.authorizeHttpRequests(auth -> auth.requestMatchers("/wxlogin","/wx/**","/error", "/email/**","/users/register","/upload","/ws/**","/verify").permitAll());
         http.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.OPTIONS, "/.*").permitAll());
         http.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.GET, "/image/*").permitAll());
 
@@ -130,6 +132,7 @@ public class SpringSecurityConfig {
 
         http.addFilterBefore(accountPasswordAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(openIdAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         //自定义无权限提示
         http.exceptionHandling(eh -> eh.authenticationEntryPoint(entryPoint).accessDeniedHandler(accessDeniedHandler));
         //全局不创建session

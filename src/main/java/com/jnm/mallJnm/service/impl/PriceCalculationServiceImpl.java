@@ -94,7 +94,6 @@ public class PriceCalculationServiceImpl implements PriceCalculationService {
             return null; // 或抛出异常
         }
         BigDecimal effectivePrice = product.getPrice(); // 默认为商品原价
-
         // 尝试获取客户组价格
         if (customerGroupId != null) {
             GroupProductPrice groupPrice = groupProductPriceService.lambdaQuery()
@@ -105,14 +104,12 @@ public class PriceCalculationServiceImpl implements PriceCalculationService {
                 effectivePrice = groupPrice.getCustomPrice();
             }
         }
-
         // 尝试获取客户专属价格 (最高优先级)
         if (customerId != null) {
             try {
-                 Long productIdLong = Long.parseLong(productId); // ProductId 在Product表中是bigint
                  CustomerProductPrice customerPrice = customerProductPriceService.lambdaQuery()
                         .eq(CustomerProductPrice::getCustomerId, customerId)
-                        .eq(CustomerProductPrice::getProductId, productIdLong) // ProductId 在 CustomerProductPrice 表中是 Long
+                        .eq(CustomerProductPrice::getProductId, productId) // ProductId 在 CustomerProductPrice 表中是 Long
                         .one();
                 if (customerPrice != null) {
                     effectivePrice = customerPrice.getCustomPrice();

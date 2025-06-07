@@ -19,10 +19,9 @@ public class JwtAuthenticationProvider implements AuthenticationProvider, Initia
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        if (!(authentication instanceof JwtAuthenticationToken)) {
+        if (!(authentication instanceof JwtAuthenticationToken token)) {
             throw new IllegalArgumentException("Only JwtAuthenticationToken is supported");
         }
-        JwtAuthenticationToken token = (JwtAuthenticationToken) authentication;
         String userId = authentication.getName();
         String userType = token.getUserType();
         User user = loginService.loadById(userId, userType);

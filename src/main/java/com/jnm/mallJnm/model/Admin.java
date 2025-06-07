@@ -14,6 +14,7 @@ public class Admin {
     private String id;
     @NotBlank(message = "用户名不可为空")
     private String username;
+    private String openid;
     private String password;
     @NotBlank(message = "用户类型不可为空")
     private String userType;

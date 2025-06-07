@@ -1,25 +1,23 @@
 package com.jnm.mallJnm.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jnm.mallJnm.exception.ServerException;
-import com.jnm.mallJnm.mapper.OneSalesCustomerVOMapper;
-import com.jnm.mallJnm.mapper.vo.CustomerVOMapper;
 import com.jnm.mallJnm.model.Admin;
-import com.jnm.mallJnm.model.SalesCustomer;
+import com.jnm.mallJnm.model.Customer;
 import com.jnm.mallJnm.model.enums.ErrorEnum;
-import com.jnm.mallJnm.model.vo.CustomerVO;
-import com.jnm.mallJnm.model.vo.OneSaleCustomersVO;
-import com.jnm.mallJnm.mybatisplus.wrapper.JoinWrapper;
+import com.jnm.mallJnm.model.enums.UserType;
+import com.jnm.mallJnm.model.vo.User;
+import com.jnm.mallJnm.security.utils.SecurityUtils;
 import com.jnm.mallJnm.service.AdminService;
-import com.jnm.mallJnm.service.SalesCustomerService;
+import com.jnm.mallJnm.service.CustomerService;
 import com.jnm.mallJnm.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/admin")
@@ -29,11 +27,8 @@ public class AdminController {
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
-    private OneSalesCustomerVOMapper oneSalesCustomerVOMapper;
-    @Autowired
-    private CustomerVOMapper customerVOMapper;
-    @Autowired
-    private SalesCustomerService salesCustomerService;
+    private CustomerService customerService;
+
     @GetMapping
     public Page<Admin> list(@RequestParam(name = "index", defaultValue = "1") int index,
                             @RequestParam(name = "size", defaultValue = "10") int size,
@@ -85,57 +80,34 @@ public class AdminController {
         }
     }
 
-    @GetMapping("/sales-customers")
-    public Page<OneSaleCustomersVO> listSalesCustomers(
+
+    @GetMapping("/sales")
+    public Page<Admin> listSales(
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String account,
-            @RequestParam(required = false) String aid
-    ) {
-        JoinWrapper<OneSaleCustomersVO> wrapper = new JoinWrapper<>();
-        wrapper.alias("sc");
-        wrapper.select("sc.id,c.name,c.account,sc.create_time as createTime,sc.update_time as updateTime");
-        wrapper.like(!StringUtil.isNullOrEmpty(name), "c.name", name);
-        wrapper.like(!StringUtil.isNullOrEmpty(account), "c.account", account);
-        wrapper.eq("sc.aid", aid);
-        wrapper.leftJoin("jnm_customer as c on sc.cid = c.id");
-        return oneSalesCustomerVOMapper.selectJoinPage(new Page<>(pageNum, pageSize), wrapper);
+            @RequestParam(required = false) String username
+    ){
+        LambdaQueryWrapper<Admin> wrapper = new LambdaQueryWrapper<>();
+        wrapper.select(Admin::getId, Admin::getUsername, Admin::getCreateTime);
+        wrapper.like(!StringUtil.isNullOrEmpty(username),Admin::getUsername, username);
+        wrapper.ne(Admin::getUserType, UserType.SUPER.name());
+        return adminService.page(new Page<>(pageNum, pageSize), wrapper);
     }
-
-    @GetMapping("/no-sales-customers")
-    public Page<CustomerVO> listNoSalesCustomers(@RequestParam(defaultValue = "1") int pageNum,
-                                                 @RequestParam(defaultValue = "10") int pageSize,
-                                                 @RequestParam(required = false) String name,
-                                                 @RequestParam(required = false) String account,
-                                                 @RequestParam(required = false) String aid) {
-        JoinWrapper<CustomerVO> wrapper = new JoinWrapper<>();
-        wrapper.alias("c");
-        wrapper.select("c.id,c.name,c.account");
-        wrapper.like(!StringUtil.isNullOrEmpty(name), "c.name", name);
-        wrapper.like(!StringUtil.isNullOrEmpty(account), "c.account", account);
-        wrapper.and(qw -> qw.isNull("sc.aid") // 条件1: 客户没有关联的业务员 (sc.aid IS NULL)
-                .or()                 // 或者
-                .ne("sc.aid", aid)); // 条件2: 客户关联的业务员不是指定的aid (sc.aid <> aid)
-        wrapper.leftJoin("jnm_sales_customer as sc on c.id = sc.cid");
-        return customerVOMapper.selectJoinPage(new Page<>(pageNum, pageSize), wrapper);
+    @GetMapping("/all")
+    public List<Admin> all(){
+        LambdaQueryWrapper<Admin> wrapper = new LambdaQueryWrapper<>();
+        wrapper.select(Admin::getId, Admin::getUsername, Admin::getCreateTime);
+        wrapper.ne(Admin::getUserType, UserType.SUPER.name());
+        return adminService.list(wrapper);
     }
-    @PostMapping("/sales-customers/batch/{aid}")
-    public void addSalesCustomers(@RequestBody ArrayList<String> cids, @PathVariable String aid) {
-        salesCustomerService.addSaleCustomerBatch(cids, aid);
-    }
-    @PutMapping("/sales-customers/batch/{aid}")
-    public void removeSalesCustomers(@RequestBody ArrayList<String> ids, @PathVariable String aid) {
-        salesCustomerService.removeSaleCustomerBatch(ids, aid);
-    }
-    @DeleteMapping("/sales-customers")
-    public void removeGroup(
-            @RequestParam String aid,
-            @RequestParam String id
-    ) {
-        LambdaUpdateWrapper<SalesCustomer> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.eq(SalesCustomer::getId, id);
-        wrapper.eq(SalesCustomer::getAid, aid);
-        salesCustomerService.remove(wrapper);
+    @GetMapping("/getPayUser")
+    public List<Customer> getPayUser(@RequestParam(required = false) String keyword){
+        User currentUser = SecurityUtils.getCurrentUser();
+        LambdaQueryWrapper<Customer> wrapper = new LambdaQueryWrapper<>();
+        wrapper.select(Customer::getId, Customer::getAccount, Customer::getName);
+        wrapper.like(!StringUtil.isNullOrEmpty(keyword),Customer::getName, keyword)
+                .or().like(!StringUtil.isNullOrEmpty(keyword),Customer::getAccount, keyword);
+        wrapper.eq(Customer::getAid, currentUser.getId());
+        return customerService.list(wrapper);
     }
 }

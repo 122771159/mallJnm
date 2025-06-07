@@ -5,13 +5,8 @@ import com.jnm.mallJnm.cache.CustomCacheManager;
 import com.jnm.mallJnm.controller.result.DataResult;
 import com.jnm.mallJnm.controller.result.Result;
 import com.jnm.mallJnm.exception.VerifyException;
-import com.jnm.mallJnm.model.Admin;
-import com.jnm.mallJnm.model.Customer;
-import com.jnm.mallJnm.model.enums.UserType;
 import com.jnm.mallJnm.model.vo.User;
 import com.jnm.mallJnm.security.token.AccountPasswordAuthenticationToken;
-import com.jnm.mallJnm.service.AdminService;
-import com.jnm.mallJnm.service.CustomerService;
 import com.jnm.mallJnm.util.ResponseUtil;
 import com.jnm.mallJnm.util.StringUtil;
 import com.jnm.mallJnm.util.TokenUtil;
@@ -44,8 +39,6 @@ public class AccountPasswordAuthenticationFilter extends AbstractAuthenticationP
     public static final String SPRING_SECURITY_FORM_OPEN_ID = "openId";
     @Autowired
     CustomCacheManager cacheManager;
-    private CustomerService customerService;
-    private AdminService adminService;
     private String accountParameter = SPRING_SECURITY_FORM_ACCOUNT_KEY;
     private String passwordParameter = SPRING_SECURITY_FORM_PASSWORD_KEY;
     private String userTypeParameter = SPRING_SECURITY_FORM_USERTYPE_KEY;
@@ -77,53 +70,30 @@ public class AccountPasswordAuthenticationFilter extends AbstractAuthenticationP
         String userType = obtainUserType(data);
         String verifyKey = obtainVerifyKey(data);
         String verifyCode = obtainVerifyCode(data);
-        String openId = obtainOpenId(data);
-//        String loginType = obtainLoginType(data);
+        String openId = obtainOpenIdParameter(data);
         if (userType == null) {
-            throw new VerifyException("用户类型不可为空");
+            userType = "";
         }
         AccountPasswordAuthenticationToken authRequest;
-        if(!StringUtil.isNullOrEmpty(openId)) { // 微信一键登录
-             String userName;
-            if("CUSTOMER".equals(userType)) {
-                Customer customer = customerService.getByOpenId(openId);
-                if(customer == null) {
-                    throw new VerifyException("没有账号绑定此微信");
-                }
-                userName = customer.getAccount();
-
-            }else{
-                Admin admin = adminService.getSalesByOpenId(openId);
-                if(admin == null) {
-                    throw new VerifyException("没有账号绑定此微信");
-                }
-                userName = admin.getUsername();
-            }
-            authRequest = new AccountPasswordAuthenticationToken(
-                    userName, "", userType);
-        }else{ // 管理员登录，账号密码登录
-            if (StringUtil.isNullOrEmpty(username)) {
-                throw new VerifyException("用户名不可为空");
-            }
-            if (StringUtil.isNullOrEmpty(password)) {
-                throw new VerifyException("密码不可为空");
-            }
-            if (UserType.ADMIN.name().equals(userType)) {
-                if (verifyKey != null && verifyCode != null) {
-                    Cache cache = cacheManager.getCache("verifyImg");
-                    if (cache != null) {
-                        String cachedCode = cache.get(verifyKey, String.class);
-                        if (cachedCode == null || !cachedCode.equalsIgnoreCase(verifyCode)) {
-                            throw new VerifyException("验证码错误");
-                        }
-                        cache.evict(verifyKey);
-                    }
-                }
-            }
-            authRequest = new AccountPasswordAuthenticationToken(
-                    username, password, userType);
+        if (StringUtil.isNullOrEmpty(username)) {
+            throw new VerifyException("用户名不可为空");
         }
-
+        if (StringUtil.isNullOrEmpty(password)) {
+            throw new VerifyException("密码不可为空");
+        }
+        if (StringUtil.isNullOrEmpty(verifyKey) || StringUtil.isNullOrEmpty(verifyCode)) {
+            throw new VerifyException("验证码不能为空");
+        }
+        Cache cache = cacheManager.getCache("verifyImg");
+        if (cache != null) {
+            String cachedCode = cache.get(verifyKey, String.class);
+            if (cachedCode == null || !cachedCode.equalsIgnoreCase(verifyCode)) {
+                throw new VerifyException("验证码错误");
+            }
+            cache.evict(verifyKey);
+        }
+        authRequest = new AccountPasswordAuthenticationToken(
+                username, password, userType,openId);
         setDetails(request, authRequest);
         return this.getAuthenticationManager().authenticate(authRequest);
     }
@@ -136,21 +106,15 @@ public class AccountPasswordAuthenticationFilter extends AbstractAuthenticationP
         User user = (User) authResult.getPrincipal();
         String token;
         token = TokenUtil.createToken(user.getId(), user.getName(), user.getUserType());
-        Object obj = null;
-        if (UserType.ADMIN.name().equals(user.getUserType())) {
-            Admin admin = adminService.getById(user.getId());
-            admin.setPassword(null);
-            obj = admin;
-        }else{
-            Customer customer = customerService.getById(user.getId());
-            customer.setPassword(null);
-            obj = customer;
-        }
         Map<String, Object> data = new HashMap<>();
+        Map<String, String> map = new HashMap<>();
+        map.put("id", user.getId());
+        map.put("username", user.getUsername());
         data.put("token", token);
-        data.put("user", obj);
+        data.put("user", map);
         data.put("roles", user.getUserType());
-        data.put("tokenExpiresIn",TokenUtil.tokenExpiration);
+        data.put("tokenExpiresIn", TokenUtil.tokenExpiration);
+        data.put("tokenFreeTimeout", TokenUtil.tokenFreeTimeout);
         DataResult<Map<String, Object>> result = new DataResult<>(data);
         ResponseUtil.outOfJson(response, result);
     }
@@ -183,21 +147,13 @@ public class AccountPasswordAuthenticationFilter extends AbstractAuthenticationP
     protected String obtainVerifyCode(Map<String, String> request) {
         return request.get(this.verifyCodeParameter);
     }
-
-    protected String obtainOpenId(Map<String, String> request) {
+    protected String obtainOpenIdParameter(Map<String, String> request) {
         return request.get(this.openIdParameter);
     }
 
+
     protected void setDetails(HttpServletRequest request, AccountPasswordAuthenticationToken authRequest) {
         authRequest.setDetails(this.authenticationDetailsSource.buildDetails(request));
-    }
-
-    public void setCustomerService(CustomerService customerService) {
-        this.customerService = customerService;
-    }
-
-    public void setAdminService(AdminService adminService) {
-        this.adminService = adminService;
     }
 
     public void setPostOnly(boolean postOnly) {

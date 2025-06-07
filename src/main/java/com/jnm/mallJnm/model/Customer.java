@@ -18,10 +18,16 @@ public class Customer {
     @NotBlank(message = "登录账号不能为空")
     private String account;  // 登录账号
     private String password;  // 登录密码
+    private String aid;
     private String openid;  // 微信openid（用于微信登录关联）
     private Integer status;  // 状态（0-禁用，1-启用）
     @TableField(condition = "group_id", updateStrategy = FieldStrategy.IGNORED) // 数据库中列名为 group_id
     private String groupId; // 所属客户组ID (外键，关联 CustomerGroup 表的 id)
     private LocalDateTime createTime;  // 创建时间
     private LocalDateTime updateTime;  // 更新时间
+    
+
+    public String getUsername(){
+        return account;
+    }
 }
