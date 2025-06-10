@@ -39,4 +39,8 @@ public class ProductServiceImpl
                 .set(Product::getUpdateTime, LocalDateTime.now())
                 .update();
     }
+    @Override
+    public boolean deductStock(String productId, Integer quantity) {
+        return baseMapper.deductStock(productId, quantity) > 0;
+    }
 }
