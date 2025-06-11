@@ -110,6 +110,7 @@ public class AccountPasswordAuthenticationFilter extends AbstractAuthenticationP
         Map<String, String> map = new HashMap<>();
         map.put("id", user.getId());
         map.put("username", user.getUsername());
+        map.put("name", user.getName());
         data.put("token", token);
         data.put("user", map);
         data.put("roles", user.getUserType());

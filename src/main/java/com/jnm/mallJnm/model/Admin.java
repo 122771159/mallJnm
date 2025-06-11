@@ -12,11 +12,13 @@ import java.time.LocalDateTime;
 public class Admin {
     @TableId(type = IdType.ASSIGN_UUID)
     private String id;
+    private String name;
     @NotBlank(message = "用户名不可为空")
     private String username;
     private String openid;
     private String password;
     @NotBlank(message = "用户类型不可为空")
     private String userType;
+    private Boolean status;
     private LocalDateTime createTime; // 创建时间
 }

@@ -1,5 +1,8 @@
 package com.jnm.mallJnm.service.impl;
 
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.write.metadata.WriteSheet;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -11,10 +14,7 @@ import com.jnm.mallJnm.model.*;
 import com.jnm.mallJnm.model.enums.ErrorEnum;
 import com.jnm.mallJnm.model.enums.OrderStatus;
 import com.jnm.mallJnm.model.enums.UserType;
-import com.jnm.mallJnm.model.vo.OrderCreateVO;
-import com.jnm.mallJnm.model.vo.OrderListVO;
-import com.jnm.mallJnm.model.vo.OrderVO;
-import com.jnm.mallJnm.model.vo.User;
+import com.jnm.mallJnm.model.vo.*;
 import com.jnm.mallJnm.security.utils.SecurityUtils;
 import com.jnm.mallJnm.service.*;
 import com.jnm.mallJnm.util.StringUtil;
@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -260,7 +261,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         params.put("userType", currentUser.getUserType());
         params.put("userId", currentUser.getId());
         // 权限处理
-        if (UserType.valueOf(currentUser.getUserType()) == UserType.SALES || UserType.valueOf(currentUser.getUserType()) == UserType.ADMIN) {
+        // || UserType.valueOf(currentUser.getUserType()) == UserType.ADMIN
+        if (UserType.valueOf(currentUser.getUserType()) == UserType.SALES ) {
             List<String> manageableCustomerIds = customerService.lambdaQuery()
                     .eq(Customer::getAid, currentUser.getId())
                     .select(Customer::getId)
@@ -299,9 +301,43 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         LambdaUpdateWrapper<Order> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.set(Order::getStatus, OrderStatus.CANCELLED.name());
         updateWrapper.set(Order::getUpdateTime, LocalDateTime.now());
+        updateWrapper.set(Order::getReason, order.getReason());
         updateWrapper.eq(Order::getCustomerId, order.getCustomerId());
         updateWrapper.eq(Order::getId, order.getId());
         updateWrapper.eq(Order::getOrderNo, order.getOrderNo());
         this.update(updateWrapper);
+    }
+    /**
+     * 新增：导出订单的业务逻辑实现
+     */
+    @Override
+    public byte[] exportOrders(Map<String, Object> params) {
+        // 1. 调用Mapper查询所有符合条件的订单数据
+        List<OrderListVO> orderList = orderVOMapper.listAllOrdersForExport(params);
+//        System.out.println(orderList.toArray().length);
+        // 2. 将查询结果(OrderListVO)转换为用于Excel导出的模型(OrderExportVO)
+        List<OrderExportVO> exportData = new ArrayList<>();
+        for (OrderListVO order : orderList) {
+            OrderExportVO exportVO = new OrderExportVO();
+            BeanUtils.copyProperties(order, exportVO);
+            // 特殊处理订单项的转换
+            exportVO.setStatus(order.getStatus());
+            exportVO.setOrderItems(order.getOrderItems());
+            exportData.add(exportVO);
+        }
+
+        // 3. 使用EasyExcel生成并写出Excel文件
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            ExcelWriter excelWriter = EasyExcel.write(outputStream).build();
+            WriteSheet writeSheet = EasyExcel.writerSheet(0,"订单数据").head(OrderExportVO.class).build();
+            excelWriter.write(exportData, writeSheet);
+            excelWriter.finish();
+            // 4. 从内存流中获取字节数组并返回
+            return outputStream.toByteArray();
+
+        } catch (Exception e) {
+            // 记录日志并处理异常
+            throw new ServerException("生成Excel字节流失败: " + e.getMessage());
+        }
     }
 }

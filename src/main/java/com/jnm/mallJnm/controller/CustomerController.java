@@ -8,6 +8,7 @@ import com.jnm.mallJnm.mapper.vo.CustomerVOMapper;
 import com.jnm.mallJnm.model.Customer;
 import com.jnm.mallJnm.model.enums.ErrorEnum;
 import com.jnm.mallJnm.model.enums.UserType;
+import com.jnm.mallJnm.model.vo.ChangePasswordVO;
 import com.jnm.mallJnm.model.vo.CustomerVO;
 import com.jnm.mallJnm.model.vo.User;
 import com.jnm.mallJnm.mybatisplus.wrapper.JoinWrapper;
@@ -45,6 +46,7 @@ public class CustomerController {
             @RequestParam(required = false) String groupId,
             @RequestParam(required = false) String aid,
             @RequestParam(required = false) Integer status) {
+        User currentUser = SecurityUtils.getCurrentUser();
 
         JoinWrapper<CustomerVO> joinWrapper = new JoinWrapper<>();
         joinWrapper.alias("c");
@@ -53,14 +55,23 @@ public class CustomerController {
         joinWrapper.like(!StringUtil.isNullOrEmpty(name), "c.name", name);
         joinWrapper.like(!StringUtil.isNullOrEmpty(account), "c.account", account);
         joinWrapper.like(!StringUtil.isNullOrEmpty(groupId), "c.group_id", groupId);
-        joinWrapper.like(!StringUtil.isNullOrEmpty(aid), "c.aid", aid);
+        if(currentUser.getUserType().equals(UserType.SALES.name())){
+            joinWrapper.eq("c.aid", currentUser.getId());
+        }else{
+            joinWrapper.eq(!StringUtil.isNullOrEmpty(aid), "c.aid", aid);
+        }
         joinWrapper.eq(status != null, "c.status", status);
         joinWrapper.leftJoin("jnm_customer_group as g on g.id = c.group_id");
         joinWrapper.leftJoin("jnm_admin as a on c.aid = a.id");
         joinWrapper.orderByDesc("c.create_time");
         return customerVOMapper.selectJoinPage(new Page<>(pageNum, pageSize), joinWrapper);
     }
+    @PutMapping("/update_info")
+    public void updateInfo(@RequestBody Customer customer) {
+        if(customer.getId() == null){
 
+        }
+    }
     // 2. 创建客户
     @Transactional(rollbackFor = Exception.class)
     @PostMapping
@@ -229,5 +240,9 @@ public class CustomerController {
         updateWrapper.eq(Customer::getId, id);
         updateWrapper.set(Customer::getAid, null);
         customerService.update(updateWrapper);
+    }
+    @PostMapping("/updatePassword")
+    public void updatePassword(@RequestBody ChangePasswordVO changePasswordVO) {
+        customerService.updateCustomer(changePasswordVO);
     }
 }

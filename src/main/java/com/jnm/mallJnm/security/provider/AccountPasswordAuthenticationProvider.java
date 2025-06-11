@@ -3,6 +3,7 @@ package com.jnm.mallJnm.security.provider;
 import com.jnm.mallJnm.security.token.AccountPasswordAuthenticationToken;
 import com.jnm.mallJnm.service.LoginService;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
@@ -57,6 +58,9 @@ public class AccountPasswordAuthenticationProvider extends AbstractUserDetailsAu
             if (loadedUser == null) {
                 throw new InternalAuthenticationServiceException("UserDetailsService returned null, which is an interface contract violation");
             } else {
+                if (!loadedUser.isEnabled()) {
+                    throw new DisabledException("用户已禁用");
+                }
                 return loadedUser;
             }
         } catch (UsernameNotFoundException e) {

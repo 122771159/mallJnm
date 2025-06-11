@@ -1,8 +1,8 @@
 package com.jnm.mallJnm.config;
 
-import com.jnm.mallJnm.util.JSONUtil;
 import com.jnm.mallJnm.controller.result.DataResult;
 import com.jnm.mallJnm.controller.result.Result;
+import com.jnm.mallJnm.util.JSONUtil;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
@@ -25,12 +25,10 @@ public class GlobalResponseAdvice implements ResponseBodyAdvice<Object> {
      */
     @Override
     public boolean supports(MethodParameter methodParameter, Class<? extends HttpMessageConverter<?>> converterType) {
-        //获取当前处理请求的controller的方法
-//        Method method = methodParameter.getMethod();
-//        if (method != null) {
-//            String methodName = method.getName();
-//            return !"getImage".equals(methodName);
-//        }
+        // 如果方法上被 @NoWrapper 注解标记，则不进行包装，直接返回false
+        if (methodParameter.getMethod().isAnnotationPresent(NoWrapper.class)) {
+            return false;
+        }
         return true;
     }
 

@@ -8,6 +8,7 @@ import com.jnm.mallJnm.model.Admin;
 import com.jnm.mallJnm.model.Customer;
 import com.jnm.mallJnm.model.enums.ErrorEnum;
 import com.jnm.mallJnm.model.enums.UserType;
+import com.jnm.mallJnm.model.vo.ChangePasswordVO;
 import com.jnm.mallJnm.model.vo.User;
 import com.jnm.mallJnm.security.utils.SecurityUtils;
 import com.jnm.mallJnm.service.AdminService;
@@ -33,13 +34,17 @@ public class AdminController {
     public Page<Admin> list(@RequestParam(name = "index", defaultValue = "1") int index,
                             @RequestParam(name = "size", defaultValue = "10") int size,
                             @RequestParam(name = "username", required = false) String username,
-                            @RequestParam(name = "userType", required = false) String user_type
+                            @RequestParam(name = "userType", required = false) String user_type,
+                            @RequestParam(name = "status", required = false) String status,
+                            @RequestParam(name = "name", required = false) String name
     ) {
         Page<Admin> page = new Page<>(index, size);
         QueryWrapper<Admin> wrapper = new QueryWrapper<>();
-        wrapper.select("id, username, create_time, user_type");
+        wrapper.select("id, username, create_time, user_type,status,name");
         wrapper.like(!StringUtil.isNullOrEmpty(username), "username", username);
         wrapper.like(!StringUtil.isNullOrEmpty(user_type), "user_type", user_type);
+        wrapper.eq(!StringUtil.isNullOrEmpty(status), "status", status);
+        wrapper.like(!StringUtil.isNullOrEmpty(name), "name", name);
         wrapper.orderByDesc("create_time");
         return adminService.page(page, wrapper);
     }
@@ -109,5 +114,22 @@ public class AdminController {
                 .or().like(!StringUtil.isNullOrEmpty(keyword),Customer::getAccount, keyword);
         wrapper.eq(Customer::getAid, currentUser.getId());
         return customerService.list(wrapper);
+    }
+    @PatchMapping("/{id}/disable")
+    public void disable(@PathVariable String id) {
+        if (!adminService.disableAdmin(id)) {
+            throw new ServerException(ErrorEnum.UPDATE_ERROR);
+        }
+    }
+
+    @PatchMapping("/{id}/enable")
+    public void enable(@PathVariable String id) {
+        if (!adminService.enableAdmin(id)) {
+            throw new ServerException(ErrorEnum.UPDATE_ERROR);
+        }
+    }
+    @PostMapping("/updatePassword")
+    public void updatePassword(@RequestBody ChangePasswordVO changePasswordVO) {
+        adminService.updatePassword(changePasswordVO);
     }
 }

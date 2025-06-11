@@ -7,6 +7,8 @@ import com.jnm.mallJnm.model.vo.OrderCreateVO;
 import com.jnm.mallJnm.model.vo.OrderListVO;
 import com.jnm.mallJnm.model.vo.OrderVO;
 
+import java.util.Map;
+
 public interface OrderService extends IService<Order> {
 
     /**
@@ -36,4 +38,11 @@ public interface OrderService extends IService<Order> {
      * 作废订单
      */
     void cancelOrder(Order order);
+
+    /**
+     * 导出订单到Excel
+     * @param params 筛选参数
+     */
+    byte[] exportOrders(Map<String, Object> params);
+
 }

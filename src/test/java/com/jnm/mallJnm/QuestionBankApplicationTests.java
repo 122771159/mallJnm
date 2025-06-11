@@ -1,6 +1,6 @@
 package com.jnm.mallJnm;
 
-import com.jnm.mallJnm.util.StringUtil;
+import com.jnm.mallJnm.model.enums.OrderStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -9,8 +9,9 @@ class QuestionBankApplicationTests {
 
     @Test
     void contextLoads() {
-        String no = StringUtil.createNo();
-        System.out.println(no);
+        System.out.println(OrderStatus.CANCELLED.name());
+        System.out.println(OrderStatus.CANCELLED.values());
+        System.out.println(OrderStatus.CANCELLED.ordinal());
     }
 
 }

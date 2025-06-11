@@ -51,7 +51,7 @@ public class LoginServiceImpl implements LoginService {
             }
             users.setOpenid(openId);
             customerService.updateById(users);
-            return new User(users.getId(), users.getAccount(), "", users.getPassword(),
+            return new User(users.getId(), users.getAccount(), users.getName(), users.getPassword(),
                     userType, listUserPermissions(userType), users.getStatus().equals(1));
         }
         throw new InternalAuthenticationServiceException("用户类型错误");
@@ -71,7 +71,7 @@ public class LoginServiceImpl implements LoginService {
         }
         admin.setOpenid(openId);
         adminService.updateById(admin);
-        return new User(admin.getId(), admin.getUsername(), "", admin.getPassword(),
+        return new User(admin.getId(), admin.getUsername(), admin.getName(), admin.getPassword(),
                 admin.getUserType(), listUserPermissions(admin.getUserType()), true);
     }
 
@@ -86,15 +86,15 @@ public class LoginServiceImpl implements LoginService {
             if (admin == null) {
                 throw new UsernameNotFoundException("用户不存在");
             }
-            return new User(admin.getId(), admin.getUsername(), "", admin.getPassword(),
-                    userType, listUserPermissions(userType), true);
+            return new User(admin.getId(), admin.getUsername(), admin.getName(), admin.getPassword(),
+                    userType, listUserPermissions(userType), true); // 管理员没有这个字段
         }else{
             Customer users = customerService.getById(id);
             if (users == null) {
                 throw new UsernameNotFoundException("用户不存在");
             }
-            return new User(users.getId(), users.getAccount(), "", users.getPassword(),
-                    userType, listUserPermissions(userType), true);
+            return new User(users.getId(), users.getAccount(), users.getName(), users.getPassword(),
+                    userType, listUserPermissions(userType), users.getStatus().equals(1));
         }
     }
 
@@ -109,15 +109,15 @@ public class LoginServiceImpl implements LoginService {
             if (admin == null) {
                 throw new UsernameNotFoundException("微信未绑定此账号");
             }
-            return new User(admin.getId(), admin.getUsername(), "", admin.getPassword(),
-                    userType, listUserPermissions(userType), true);
+            return new User(admin.getId(), admin.getUsername(), admin.getName(), admin.getPassword(),
+                    userType, listUserPermissions(userType), admin.getStatus());
         }else{
             Customer users = customerService.getByOpenId(openId);
             if (users == null) {
                 throw new UsernameNotFoundException("微信未绑定此账号");
             }
-            return new User(users.getId(), users.getAccount(), "", users.getPassword(),
-                    userType, listUserPermissions(userType), true);
+            return new User(users.getId(), users.getAccount(), users.getName(), users.getPassword(),
+                    userType, listUserPermissions(userType), users.getStatus().equals(1));
         }
     }
 
